@@ -1,19 +1,20 @@
-const pokemonLocal = [
-  { nombre: "bulbasaur",  imagen: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",  tipos: ["grass", "poison"] },
-  { nombre: "charmander", imagen: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png",  tipos: ["fire"] },
-  { nombre: "squirtle",   imagen: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png",  tipos: ["water"] },
-  { nombre: "pikachu",    imagen: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png", tipos: ["electric"] },
-  { nombre: "jigglypuff", imagen: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/39.png", tipos: ["normal", "fairy"] },
-  { nombre: "gengar",     imagen: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png",  tipos: ["ghost", "poison"] }
-];
+// ── C09 (comentado — referencia) ─────────────────────────────────
+// const pokemonLocal = [
+//  { nombre: "bulbasaur",  imagen: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",  tipos: ["grass", "poison"] },
+//  { nombre: "charmander", imagen: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png",  tipos: ["fire"] },
+//  { nombre: "squirtle",   imagen: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png",  tipos: ["water"] },
+//  { nombre: "pikachu",    imagen: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png", tipos: ["electric"] },
+//  { nombre: "jigglypuff", imagen: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/39.png", tipos: ["normal", "fairy"] },
+//  { nombre: "gengar",     imagen: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png",  tipos: ["ghost", "poison"] }
+// ];
 
 // Logro 2 — Spread: agrega Mewtwo sin mutar pokemonLocal
-const nuevo = {
-  nombre: "mewtwo",
-  imagen: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png",
-  tipos: ["psychic"]
-};
-const listaPokemon = [...pokemonLocal, nuevo];
+// const nuevo = {
+//  nombre: "mewtwo",
+//  imagen: "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png",
+//  tipos: ["psychic"]
+// };
+//const listaPokemon = [...pokemonLocal, nuevo];
 
 // Logro 1 — Color por tipo
 const coloresPorTipo = {
@@ -68,15 +69,58 @@ function render(lista) {
 }
 
 // Llamada inicial con la lista ampliada (Logro 2)
-render(listaPokemon);
+// render(listaPokemon);
 
 // HU4 — Filtro en vivo
+// const buscador = document.getElementById("buscador");
+
+//buscador.addEventListener("input", function () {
+//  const texto = buscador.value.toLowerCase();
+//  const filtrados = listaPokemon.filter(function (p) {
+//    return p.nombre.includes(texto);
+//  });
+//  render(filtrados);
+// });
+
+// ── C10: lo nuevo va aquí ─────────────────────────────────────────
+
+// Traduce la estructura anidada de la API a la forma limpia de C09
+function adaptarPokemon(data) {
+  return {
+    nombre: data.name,
+    imagen: data.sprites?.front_default ?? "https://via.placeholder.com/96?text=?",
+    tipos:  data.types.map(t => t.type.name)
+  };
+}
+
+const nombres = ["bulbasaur", "charmander", "squirtle", "pikachu", "jigglypuff", "gengar"];
+let pokedex = [];   // aquí guardamos la rejilla cargada
+
+contenedor.innerHTML = `
+  <div class="col-span-full flex justify-center items-center py-10">
+    <div class="w-12 h-12 border-4 border-slate-300 border-t-red-500 rounded-full animate-spin"></div>
+  </div>
+`;
+
+// Un fetch por cada nombre → array de promesas
+const promesas = nombres.map(function (nombre) {
+  return fetch(`https://pokeapi.co/api/v2/pokemon/${nombre}`).then(r => r.json());
+});
+
+Promise.all(promesas)
+  .then(function (datos) {
+    pokedex = datos.map(adaptarPokemon);   // adapta todos a la forma limpia
+    render(pokedex);
+  })
+  .catch(function () {
+    contenedor.innerHTML = `<p class="col-span-full text-center text-red-600">No se pudo cargar la Pokédex.</p>`;
+  });
+
+// Buscador reconectado — solo cambia pokemonLocal por pokedex
 const buscador = document.getElementById("buscador");
 
 buscador.addEventListener("input", function () {
   const texto = buscador.value.toLowerCase();
-  const filtrados = listaPokemon.filter(function (p) {
-    return p.nombre.includes(texto);
-  });
+  const filtrados = pokedex.filter(p => p.nombre.includes(texto));
   render(filtrados);
 });
