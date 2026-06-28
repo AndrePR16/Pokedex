@@ -61,21 +61,21 @@ function crearTarjeta(pokemon) {
 
 // HU2 — Patrón render: limpiar → recorrer → agregar
 function render(lista) {
-  contenedor.innerHTML = "";
-  lista.forEach(function (pokemon) {
-    const tarjeta = crearTarjeta(pokemon);
+    contenedor.innerHTML = "";
+    lista.forEach(function (pokemon) {
+        const tarjeta = crearTarjeta(pokemon);
 
-    const botonQuitar = document.createElement("button");
-    botonQuitar.textContent = "❌ Quitar";
-    botonQuitar.className = "mt-2 w-full bg-red-200 text-red-800 font-semibold rounded-lg py-1 hover:bg-red-300";
-    botonQuitar.addEventListener("click", function () {
-      pokedex = pokedex.filter(p => p.nombre !== pokemon.nombre);
-      render(pokedex);
+        const botonQuitar = document.createElement("button");
+        botonQuitar.textContent = "❌ Quitar";
+        botonQuitar.className = "mt-2 w-full bg-red-200 text-red-800 font-semibold rounded-lg py-1 hover:bg-red-300";
+        botonQuitar.addEventListener("click", function () {
+            pokedex = pokedex.filter(p => p.nombre !== pokemon.nombre);
+            render(pokedex);
+        });
+        tarjeta.appendChild(botonQuitar);
+
+        contenedor.appendChild(tarjeta);
     });
-    tarjeta.appendChild(botonQuitar);
-
-    contenedor.appendChild(tarjeta);
-  });
 }
 
 // Llamada inicial con la lista ampliada (Logro 2)
@@ -139,32 +139,32 @@ function adaptarPokemon(data) {
 // ── C11: lo nuevo va aquí ─────────────────────────────────────────
 
 // Función base: trae un Pokémon por nombre o id
-async function obtenerPokemon(idONombre) {
-    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${idONombre}`);
-    return response.json();
-}
+// async function obtenerPokemon(idONombre) {
+//    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${idONombre}`);
+//    return response.json();
+// }
 
 // Reformula la carga de C10 con async/await
 let pokedex = [];   // ← agregar esta línea
 
-async function obtenerPokemon(idONombre) {
-    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${idONombre}`);
-    return response.json();
-}
+//async function obtenerPokemon(idONombre) {
+//    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${idONombre}`);
+//    return response.json();
+// }
 
-async function cargarPokedex() {
-    const nombres = ["bulbasaur", "charmander", "squirtle", "pikachu", "jigglypuff", "gengar"];
-    contenedor.innerHTML = `
-    <div class="col-span-full flex justify-center items-center py-10">
-      <div class="w-12 h-12 border-4 border-slate-300 border-t-red-500 rounded-full animate-spin"></div>
-    </div>
-  `;
-    const datos = await Promise.all(nombres.map(obtenerPokemon));
-    pokedex = datos.map(adaptarPokemon);
-    render(pokedex);
-}
+//async function cargarPokedex() {
+//    const nombres = ["bulbasaur", "charmander", "squirtle", "pikachu", "jigglypuff", "gengar"];
+//    contenedor.innerHTML = `
+//    <div class="col-span-full flex justify-center items-center py-10">
+//      <div class="w-12 h-12 border-4 border-slate-300 border-t-red-500 rounded-full animate-spin"></div>
+//    </div>
+//  `;
+//    const datos = await Promise.all(nombres.map(obtenerPokemon));
+//    pokedex = datos.map(adaptarPokemon);
+//    render(pokedex);
+// }
 
-cargarPokedex();
+// cargarPokedex();
 
 // HU2 — Buscar y traer el Pokémon
 const buscador = document.getElementById("buscador");
@@ -175,10 +175,10 @@ async function buscarPokemon(nombre) {
     return adaptarPokemon(data);
 }
 
-async function mostrarBusqueda(nombre) {
-    const pokemon = await buscarPokemon(nombre);
-    mostrarResultado(pokemon);
-}
+// async function mostrarBusqueda(nombre) {
+//    const pokemon = await buscarPokemon(nombre);
+//    mostrarResultado(pokemon);
+// }
 
 botonBuscar.addEventListener("click", function () {
     const nombre = buscador.value.trim();
@@ -244,3 +244,57 @@ async function cargarMas() {
 }
 
 document.getElementById("cargar-mas").addEventListener("click", cargarMas);
+
+// ── C12: lo nuevo va aquí ─────────────────────────────────────────
+
+const spinner = document.getElementById("spinner");
+const mensaje = document.getElementById("mensaje");
+
+// 1. primero obtenerPokemon (la base)
+async function obtenerPokemon(idONombre) {
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${idONombre}`);
+    if (!response.ok) {
+        throw new Error(`No se encontró "${idONombre}"`);
+    }
+    return response.json();
+}
+
+// 2. luego mostrarBusqueda (que la usa indirectamente)
+async function mostrarBusqueda(nombre) {
+    spinner.classList.remove("hidden");   // ⏳ muestra carga  
+    mensaje.classList.add("hidden");
+
+    try {
+        const pokemon = await buscarPokemon(nombre);
+        mostrarResultado(pokemon);
+    } catch (error) {
+        // si es un error de red, muestra mensaje de conexión
+        // si es un 404, muestra el mensaje específico del throw
+        if (error.message === "Failed to fetch") {
+            mensaje.textContent = "Algo salió mal. Revisa tu conexión.";
+        } else {
+            mensaje.textContent = error.message;
+        }
+        mensaje.classList.remove("hidden");
+    } finally {
+        spinner.classList.add("hidden");
+    }
+}
+
+// cargarPokedex robusta — comenta la de C11 y agrega esta
+async function cargarPokedex() {
+    spinner.classList.remove("hidden");
+    try {
+        const nombres = ["bulbasaur", "charmander", "squirtle", "pikachu", "jigglypuff", "gengar"];
+        const datos = await Promise.all(nombres.map(obtenerPokemon));
+        pokedex = datos.map(adaptarPokemon);
+        render(pokedex);
+    } catch (error) {
+        mensaje.textContent = "No se pudo cargar la Pokédex.";
+        mensaje.classList.remove("hidden");
+    } finally {
+        spinner.classList.add("hidden");
+    }
+}
+
+cargarPokedex();
