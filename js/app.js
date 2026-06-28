@@ -268,17 +268,26 @@ async function mostrarBusqueda(nombre) {
         const pokemon = await buscarPokemon(nombre);
         mostrarResultado(pokemon);
     } catch (error) {
-        // si es un error de red, muestra mensaje de conexión
-        // si es un 404, muestra el mensaje específico del throw
-        if (error.message === "Failed to fetch") {
-            mensaje.textContent = "Algo salió mal. Revisa tu conexión.";
-        } else {
-            mensaje.textContent = error.message;
-        }
-        mensaje.classList.remove("hidden");
-    } finally {
-        spinner.classList.add("hidden");
+    if (error.message === "Failed to fetch") {
+      mensaje.textContent = "Algo salió mal. Revisa tu conexión.";
+    } else {
+      mensaje.textContent = error.message;
     }
+    mensaje.classList.remove("hidden");
+
+    // Logro 1 — botón reintentar
+    const btnReintentar = document.createElement("button");
+    btnReintentar.textContent = "🔄 Reintentar";
+    btnReintentar.className = "mt-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 block mx-auto";
+    btnReintentar.addEventListener("click", function () {
+      btnReintentar.remove();
+      mostrarBusqueda(nombre);   // repite la última búsqueda
+    });
+    mensaje.insertAdjacentElement("afterend", btnReintentar);
+
+  } finally {
+    spinner.classList.add("hidden");
+  }
 }
 
 // cargarPokedex robusta — comenta la de C11 y agrega esta

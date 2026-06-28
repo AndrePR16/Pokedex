@@ -35,3 +35,9 @@ Buscador de Pokémon que consume la PokeAPI. Proyecto integrador del Módulo 3 d
 - JavaScript (`fetch`, `async/await`, `Promise.all`, `try/catch/finally`)
 - Tailwind CSS (por CDN)
 - [PokeAPI](https://pokeapi.co/)
+
+## Capturas
+
+![Rejilla de Pokémon](assets/rejilla.png)
+![Búsqueda exitosa](assets/busqueda.png)
+![Mensaje de error](assets/error.png)ya esta

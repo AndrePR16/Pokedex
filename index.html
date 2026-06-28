@@ -20,11 +20,13 @@
         </button>
     </div>
     <!-- Estados de UI -->
-    <div id="spinner" class="hidden text-center text-slate-500 my-4">Cargando…</div>
+    <div id="spinner" class="hidden flex justify-center my-4">
+        <div class="w-8 h-8 border-4 border-slate-300 border-t-red-500 rounded-full animate-spin"></div>
+    </div>
     <div id="mensaje" class="hidden text-center text-red-600 font-medium my-4"></div>
-    
+
     <div id="resultado" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-auto"></div>
-    
+
     <div class="text-center my-6">
         <button id="cargar-mas" class="px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800">
             Cargar más
